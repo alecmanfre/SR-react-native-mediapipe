@@ -30,7 +30,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build examples/*/android/build examples/*/android/app/build examples/*/ios/build lib",
-    "prepare": "git submodule update --init --recursive && bob build",
+    "prepare": "bob build",
     "update-submodule": "git submodule update --remote --merge",
     "adb-reverse": "adb reverse tcp:8081 tcp:8081",
     "release": "release-it"
