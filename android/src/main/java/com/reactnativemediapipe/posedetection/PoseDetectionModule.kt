@@ -19,7 +19,7 @@ class PoseDetectionModule(reactContext: ReactApplicationContext) :
   private var nextId = 22 // just not zero
 
   override fun getName(): String {
-    return "PoseDetection"
+    return "PoseDetectionVideo"
   }
 
   private class PoseDetectorListener(

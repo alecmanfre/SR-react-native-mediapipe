@@ -9,7 +9,7 @@
 #import "React/RCTBridgeModule.h"
 #import "React/RCTEventEmitter.h"
 
-@interface RCT_EXTERN_REMAP_MODULE(PoseDetection, PoseDetectionModule, RCTEventEmitter)
+@interface RCT_EXTERN_REMAP_MODULE(PoseDetectionVideo, PoseDetectionModule, RCTEventEmitter)
 RCT_EXTERN_METHOD(
                   createDetector:(NSInteger)numPoses
                   withMinPoseDetectionConfidence:(nonnull NSNumber *)minPoseDetectionConfidence

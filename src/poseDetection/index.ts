@@ -28,8 +28,8 @@ import {
 import { BaseViewCoordinator } from "../shared/convert";
 import { useRunOnJS, useSharedValue } from "react-native-worklets-core";
 
-const { PoseDetection } = NativeModules;
-const eventEmitter = new NativeEventEmitter(PoseDetection);
+const { PoseDetectionVideo } = NativeModules;
+const eventEmitter = new NativeEventEmitter(PoseDetectionVideo);
 
 const plugin = VisionCameraProxy.initFrameProcessorPlugin("poseDetection", {});
 
@@ -102,18 +102,18 @@ type PoseDetectionCallbackState =
   DetectionCallbackState<PoseDetectionResultBundle>;
 
 function getPoseDetectionModule(): PoseDetectionModule {
-  if (PoseDetection === undefined || PoseDetection === null) {
+  if (PoseDetectionVideo === undefined || PoseDetectionVideo === null) {
     throw new Error("PoseDetection module is not available");
   }
 
   // Debug: Log available methods
-  console.log("PoseDetection module methods:", Object.keys(PoseDetection));
+  console.log("PoseDetection module methods:", Object.keys(PoseDetectionVideo));
   console.log(
     "detectPoseOnVideo available:",
-    typeof PoseDetection.detectPoseOnVideo
+    typeof PoseDetectionVideo.detectPoseOnVideo
   );
 
-  return PoseDetection as PoseDetectionModule;
+  return PoseDetectionVideo as PoseDetectionModule;
 }
 
 const detectorMap = new Map<number, PoseDetectionCallbackState>();
