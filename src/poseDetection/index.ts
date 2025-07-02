@@ -29,6 +29,12 @@ import { BaseViewCoordinator } from "../shared/convert";
 import { useRunOnJS, useSharedValue } from "react-native-worklets-core";
 
 const { PoseDetectionVideo } = NativeModules;
+
+// DEBUG: Let's see what's actually available
+console.log("🔍 DEBUG: All NativeModules keys:", Object.keys(NativeModules));
+console.log("🔍 DEBUG: PoseDetectionVideo:", PoseDetectionVideo);
+console.log("🔍 DEBUG: PoseDetection (old):", NativeModules.PoseDetection);
+
 const eventEmitter = new NativeEventEmitter(PoseDetectionVideo);
 
 const plugin = VisionCameraProxy.initFrameProcessorPlugin("poseDetection", {});
