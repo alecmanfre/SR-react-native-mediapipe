@@ -8,6 +8,7 @@
 import Foundation
 import MediaPipeTasksVision
 import React
+import AVFoundation
 
 @objc(PoseDetectionModule)
 class PoseDetectionModule: RCTEventEmitter {
@@ -122,47 +123,89 @@ class PoseDetectionModule: RCTEventEmitter {
     }
   }
 
-  @objc func detectOnVideo(
+  @objc func detectPoseOnVideo(
     _ videoPath: String,
+    withFps fps: NSNumber,
     withNumPoses numPoses: NSInteger,
-    withMinPoseDetectionConfidence minPoseDetectionConfidence: NSNumber,
-    withMinPosePresenceConfidence minPosePresenceConfidence: NSNumber,
-    withMinTrackingConfidence minTrackingConfidence: NSNumber,
-    withShouldOutputSegmentationMasks shouldOutputSegmentationMasks: Bool,
+    withOptions options: NSDictionary,
     withModel model: String,
     withDelegate delegate: NSInteger,
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    do {
-      // let helper = try PoseDetectorHelper(
-      //   handle: 0,
-      //   numPoses: numPoses,
-      //   minPoseDetectionConfidence: minPoseDetectionConfidence.floatValue,
-      //   minPosePresenceConfidence: minPosePresenceConfidence.floatValue,
-      //   minTrackingConfidence: minTrackingConfidence.floatValue,
-      //   shouldOutputSegmentationMasks: shouldOutputSegmentationMasks,
-      //   modelName: model,
-      //   delegate: delegate,        runningMode: RunningMode.image)
-      // helper.delegate = self  // Assuming `self` conforms to `PoseDetectorHelperDelegate`
+    // Extract options from the dictionary
+    let minPoseDetectionConfidence = options["minPoseDetectionConfidence"] as? NSNumber ?? 0.5
+    let minPosePresenceConfidence = options["minPosePresenceConfidence"] as? NSNumber ?? 0.5
+    let minTrackingConfidence = options["minTrackingConfidence"] as? NSNumber ?? 0.5
+    let shouldOutputSegmentationMasks = options["shouldOutputSegmentationMasks"] as? Bool ?? false
+    
+    // 1. Open the video file using AVAsset
+    let url = URL(fileURLWithPath: videoPath)
+    let asset = AVAsset(url: url)
+    let duration = asset.duration
+    let durationSeconds = CMTimeGetSeconds(duration)
+    let fpsValue = fps.doubleValue > 0 ? fps.doubleValue : 30.0
+    let frameInterval = 1.0 / fpsValue
 
-      // // convert path to UIImage
-      // let image = try loadImageFromPath(from: imagePath)
-      // if let result = helper.detect(image: image) {
-      //   let resultArgs = convertFldResultBundleToDictionary(result)
-      //   resolve(resultArgs)
-      // } else {
-      //   throw NSError(
-      //     domain: "com.PoseDetection.error", code: 1001,
-      //     userInfo: [NSLocalizedDescriptionKey: "Detection failed."])
-      // }
-      throw NSError(
-        domain: "com.PoseDetection.error", code: 1004,
-        userInfo: [NSLocalizedDescriptionKey: "Not implemented."])
-    } catch let error as NSError {
-      // If an error is thrown, reject the promise
-      // You can customize the error code and message as needed
-      reject("ERROR_CODE", "An error occurred: \(error.localizedDescription)", error)
+    // 2. Set up AVAssetImageGenerator to extract frames
+    let imageGenerator = AVAssetImageGenerator(asset: asset)
+    imageGenerator.appliesPreferredTrackTransform = true
+    imageGenerator.requestedTimeToleranceAfter = .zero
+    imageGenerator.requestedTimeToleranceBefore = .zero
+
+    // 3. Prepare times for frame extraction
+    var times = [NSValue]()
+    var currentTime = 0.0
+    while currentTime < durationSeconds {
+      let cmTime = CMTimeMakeWithSeconds(currentTime, preferredTimescale: 600)
+      times.append(NSValue(time: cmTime))
+      currentTime += frameInterval
+    }
+
+    // 4. Run on background queue
+    DispatchQueue.global(qos: .userInitiated).async {
+      do {
+        // Prepare pose detector helper in video mode
+        let helper = try PoseDetectorHelper(
+          handle: 0,
+          numPoses: numPoses,
+          minPoseDetectionConfidence: minPoseDetectionConfidence.floatValue,
+          minPosePresenceConfidence: minPosePresenceConfidence.floatValue,
+          minTrackingConfidence: minTrackingConfidence.floatValue,
+          shouldOutputSegmentationMasks: shouldOutputSegmentationMasks,
+          modelName: model,
+          delegate: delegate,
+          runningMode: .video
+        )
+        var results: [[String: Any]] = []
+        for (i, timeValue) in times.enumerated() {
+          let time = timeValue.timeValue
+          do {
+            let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+            let uiImage = UIImage(cgImage: cgImage)
+            // Run pose detection in video mode using MediaPipe's detect method
+            let timestampMs = Int(CMTimeGetSeconds(time) * 1000)
+            let mpImage = try MPImage(uiImage: uiImage)
+            if let result = try helper.poseLandmarker?.detect(videoFrame: mpImage, timestampInMilliseconds: timestampMs) {
+              var dict = convertPdResultBundleToDictionary(PoseDetectionResultBundle(
+                inferenceTime: 0, // We can calculate this if needed
+                poseDetectorResults: [result],
+                size: uiImage.size
+              ))
+              dict["frameIndex"] = i
+              dict["timestampMs"] = timestampMs
+              results.append(dict)
+            } else {
+              results.append(["frameIndex": i, "timestampMs": timestampMs, "error": "No result"])
+            }
+          } catch let error {
+            results.append(["frameIndex": i, "timestampMs": Int64(CMTimeGetSeconds(time) * 1000), "error": error.localizedDescription])
+          }
+        }
+        resolve(results)
+      } catch let error as NSError {
+        reject("ERROR_CODE", "An error occurred: \(error.localizedDescription)", error)
+      }
     }
   }
 

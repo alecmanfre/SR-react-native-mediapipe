@@ -111,7 +111,7 @@ class PoseDetectionModule(reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
-  fun detectOnVideo(
+  fun detectPoseOnVideo(
       videoPath: String,
       threshold: Float,
       maxResults: Int,
@@ -119,7 +119,7 @@ class PoseDetectionModule(reactContext: ReactApplicationContext) :
       model: String,
       promise: Promise
   ) {
-    promise.reject(UnsupportedOperationException("detectOnVideo not yet implemented"))
+    promise.reject(UnsupportedOperationException("detectPoseOnVideo not yet implemented"))
   }
 
   @ReactMethod

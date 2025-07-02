@@ -59,6 +59,19 @@ interface PoseDetectionModule {
     model: string,
     delegate: Delegate
   ) => Promise<PoseDetectionResultBundle>;
+  detectPoseOnVideo: (
+    videoPath: string,
+    fps: number,
+    numPoses: number,
+    options: {
+      minPoseDetectionConfidence?: number;
+      minPosePresenceConfidence?: number;
+      minTrackingConfidence?: number;
+      shouldOutputSegmentationMasks?: boolean;
+    },
+    model: string,
+    delegate: Delegate
+  ) => Promise<PoseDetectionResultBundle[]>;
 }
 
 export interface PoseLandmarkerResult {
@@ -92,6 +105,14 @@ function getPoseDetectionModule(): PoseDetectionModule {
   if (PoseDetection === undefined || PoseDetection === null) {
     throw new Error("PoseDetection module is not available");
   }
+
+  // Debug: Log available methods
+  console.log("PoseDetection module methods:", Object.keys(PoseDetection));
+  console.log(
+    "detectPoseOnVideo available:",
+    typeof PoseDetection.detectPoseOnVideo
+  );
+
   return PoseDetection as PoseDetectionModule;
 }
 
@@ -348,6 +369,37 @@ export function PoseDetectionOnImage(
     options?.minPosePresenceConfidence ?? 0.5,
     options?.minTrackingConfidence ?? 0.5,
     options?.shouldOutputSegmentationMasks ?? false,
+    model,
+    options?.delegate ?? Delegate.GPU
+  );
+}
+
+/**
+ * Runs pose detection on a video file at the specified FPS.
+ * @param videoPath Path to the video file
+ * @param fps Frames per second to sample (default 30)
+ * @param model Model name (e.g., 'pose_landmarker_lite.task')
+ * @param options Pose detection options
+ * @returns Promise resolving to an array of pose results (one per frame)
+ */
+export function PoseDetectionOnVideo(
+  videoPath: string,
+  fps = 30,
+  model = "pose_landmarker_lite.task",
+  options?: Partial<PoseDetectionOptions>
+): Promise<PoseDetectionResultBundle[]> {
+  console.log("yo yo yo yo yo1");
+  return (getPoseDetectionModule() as PoseDetectionModule).detectPoseOnVideo(
+    videoPath,
+    fps,
+    options?.numPoses ?? 1,
+    {
+      minPoseDetectionConfidence: options?.minPoseDetectionConfidence,
+      minPosePresenceConfidence: options?.minPosePresenceConfidence,
+      minTrackingConfidence: options?.minTrackingConfidence,
+      shouldOutputSegmentationMasks:
+        options?.shouldOutputSegmentationMasks ?? false,
+    },
     model,
     options?.delegate ?? Delegate.GPU
   );

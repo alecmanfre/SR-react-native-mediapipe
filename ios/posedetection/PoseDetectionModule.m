@@ -40,12 +40,10 @@ RCT_EXTERN_METHOD(detectOnImage:(nonnull NSString *)imagePath
                   rejecter:(RCTPromiseRejectBlock)reject
                   )
 
-RCT_EXTERN_METHOD(detectOnVideo:(nonnull NSString *)videoPath
+RCT_EXTERN_METHOD(detectPoseOnVideo:(nonnull NSString *)videoPath
+                  withFps:(nonnull NSNumber *)fps
                   withNumPoses:(NSInteger)numPoses
-                  withMinPoseDetectionConfidence:(nonnull NSNumber *)minPoseDetectionConfidence
-                  withMinPosePresenceConfidence:(nonnull NSNumber *)minPosePresenceConfidence
-                  withMinTrackingConfidence:(nonnull NSNumber *)minTrackingConfidence
-                  withShouldOutputSegmentationMasks:(BOOL)shouldOutputSegmentationMasks
+                  withOptions:(nonnull NSDictionary *)options
                   withModel:(nonnull NSString *)model
                   withDelegate:(NSInteger)delegate
                   resolver:(RCTPromiseResolveBlock)resolve
