@@ -147,7 +147,7 @@ export function usePoseDetection(
   runningMode: RunningMode,
   model: string,
   options?: Partial<PoseDetectionOptions>
-): MediaPipeSolution {
+): MediaPipeSolution & { releaseDetector: () => Promise<void> } {
   const [detectorHandle, setDetectorHandle] = React.useState<
     number | undefined
   >();
@@ -297,6 +297,11 @@ export function usePoseDetection(
   const frameProcessor = useFrameProcessor(
     (frame) => {
       "worklet";
+      // Early return if detector is not available
+      if (detectorHandle === undefined) {
+        return;
+      }
+
       // console.log(
       //   `frameProcessor: ${frame.orientation}: ${frame.width}x${frame.height}:${outputOrientation.value}`
       // );
@@ -337,8 +342,28 @@ export function usePoseDetection(
       updateDetectorMapFromWorklet,
     ]
   );
+  const releaseDetector = React.useCallback(async () => {
+    if (detectorHandle !== undefined) {
+      console.log("usePoseDetection.releaseDetector", detectorHandle);
+      await getPoseDetectionModule().releaseDetector(detectorHandle);
+      setDetectorHandle(undefined);
+      detectorMap.delete(detectorHandle);
+
+      // Clear any pending callbacks to prevent memory leaks
+      const callbacks = detectorMap.get(detectorHandle);
+      if (callbacks) {
+        callbacks.onResults = () => {
+          // No-op to prevent memory leaks
+        };
+        callbacks.onError = () => {
+          // No-op to prevent memory leaks
+        };
+      }
+    }
+  }, [detectorHandle]);
+
   return React.useMemo(
-    (): MediaPipeSolution => ({
+    (): MediaPipeSolution & { releaseDetector: () => Promise<void> } => ({
       cameraViewLayoutChangeHandler,
       cameraDeviceChangeHandler: (d) => {
         setCameraDevice(d);
@@ -353,12 +378,14 @@ export function usePoseDetection(
       resizeModeChangeHandler: setResizeMode,
       cameraViewDimensions,
       frameProcessor,
+      releaseDetector,
     }),
     [
       cameraViewDimensions,
       cameraViewLayoutChangeHandler,
       frameProcessor,
       outputOrientation,
+      releaseDetector,
     ]
   );
 }

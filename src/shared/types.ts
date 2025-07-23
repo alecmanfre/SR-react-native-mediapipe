@@ -25,6 +25,7 @@ export interface MediaPipeSolution {
   cameraOrientationChangedHandler: (orientation: Orientation) => void;
   cameraViewDimensions: { width: number; height: number };
   resizeModeChangeHandler: (resizeMode: ResizeMode) => void;
+  releaseDetector?: () => Promise<void>;
 }
 
 // eslint-disable-next-line no-restricted-syntax

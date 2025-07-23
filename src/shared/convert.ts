@@ -282,16 +282,6 @@ export class BaseViewCoordinator implements ViewCoordinator {
   ) {
     this.orientation = relativeTo(outputOrientation, sensorOrientation);
     this.rotation = orientationToRotation(this.orientation);
-    console.log(
-      "BaseViewCoordinator.constructor",
-      JSON.stringify({
-        mirrored: this.mirrored,
-        orientation: this.orientation,
-        rotation: this.rotation,
-        sensorOrientation,
-        outputOrientation,
-      })
-    );
   }
   getFrameDims(info: FrameProcessInfo): Dims {
     return dimsByOrientation(

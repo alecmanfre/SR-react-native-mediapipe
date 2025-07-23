@@ -46,6 +46,17 @@ class PoseDetectorHelper: NSObject {
   // this should rarely be an issue
   private var livestreamImageSize: CGSize = CGSize(width: 0, height: 0)
 
+  // MARK: - Cleanup
+  func cleanup() {
+    liveStreamDelegate = nil
+    videoDelegate = nil
+    poseLandmarker = nil
+  }
+
+  deinit {
+    cleanup()
+  }
+
   // MARK: - Custom Initializer
   init(
     handle:Int,

@@ -75,7 +75,8 @@ class PoseDetectionModule: RCTEventEmitter {
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    if PoseDetectionModule.detectorMap.removeValue(forKey: handle) != nil {
+    if let helper = PoseDetectionModule.detectorMap.removeValue(forKey: handle) {
+      helper.cleanup()
       resolve(true)
     } else {
       resolve(false)
