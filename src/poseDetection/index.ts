@@ -30,11 +30,6 @@ import { useRunOnJS, useSharedValue } from "react-native-worklets-core";
 
 const { PoseDetectionVideo } = NativeModules;
 
-// DEBUG: Let's see what's actually available
-console.log("🔍 DEBUG: All NativeModules keys:", Object.keys(NativeModules));
-console.log("🔍 DEBUG: PoseDetectionVideo:", PoseDetectionVideo);
-console.log("🔍 DEBUG: PoseDetection (old):", NativeModules.PoseDetection);
-
 const eventEmitter = new NativeEventEmitter(PoseDetectionVideo);
 
 const plugin = VisionCameraProxy.initFrameProcessorPlugin("poseDetection", {});
@@ -394,7 +389,6 @@ export function PoseDetectionOnVideo(
   model = "pose_landmarker_lite.task",
   options?: Partial<PoseDetectionOptions>
 ): Promise<PoseDetectionResultBundle[]> {
-  console.log("yo yo yo yo yo1");
   return (getPoseDetectionModule() as PoseDetectionModule).detectPoseOnVideo(
     videoPath,
     fps,
