@@ -52,13 +52,9 @@ class PoseDetectorHelper: NSObject {
     liveStreamDelegate = nil
     videoDelegate = nil
     
-    // Safely clean up poseLandmarker on main thread with weak reference
-    DispatchQueue.main.async { [weak self] in
-      guard let self = self else { return }
-      // Only set to nil if it's not already nil
-      if self.poseLandmarker != nil {
-        self.poseLandmarker = nil
-      }
+    // Simple synchronous cleanup with nil check
+    if poseLandmarker != nil {
+      poseLandmarker = nil
     }
   }
 

@@ -76,11 +76,9 @@ class PoseDetectionModule: RCTEventEmitter {
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
     if let helper = PoseDetectionModule.detectorMap.removeValue(forKey: handle) {
-      // Clean up on main thread to avoid threading issues
-      DispatchQueue.main.async {
-        helper.cleanup()
-        resolve(true)
-      }
+      // Simple synchronous cleanup
+      helper.cleanup()
+      resolve(true)
     } else {
       resolve(false)
     }
