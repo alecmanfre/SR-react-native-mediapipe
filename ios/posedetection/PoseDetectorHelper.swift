@@ -48,9 +48,18 @@ class PoseDetectorHelper: NSObject {
 
   // MARK: - Cleanup
   func cleanup() {
+    // Clear delegates first
     liveStreamDelegate = nil
     videoDelegate = nil
-    poseLandmarker = nil
+    
+    // Safely clean up poseLandmarker on main thread with weak reference
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      // Only set to nil if it's not already nil
+      if self.poseLandmarker != nil {
+        self.poseLandmarker = nil
+      }
+    }
   }
 
   deinit {
