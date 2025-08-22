@@ -80,18 +80,6 @@ class PoseDetectorHelper: NSObject {
     createPoseLandmarker()
   }
 
-  // MARK: - Cleanup Method
-  func cleanup() {
-    // Properly close the MediaPipe poseLandmarker to prevent memory leaks
-    poseLandmarker = nil
-  }
-
-  // MARK: - Deinitializer
-  deinit {
-    // Safety net: ensure cleanup happens when object is deallocated
-    cleanup()
-  }
-
   private func createPoseLandmarker() {
     let poseLandmarkerOptions = PoseLandmarkerOptions()
     poseLandmarkerOptions.runningMode = runningMode
