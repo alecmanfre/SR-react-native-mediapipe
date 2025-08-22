@@ -75,7 +75,10 @@ class PoseDetectionModule: RCTEventEmitter {
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    if PoseDetectionModule.detectorMap.removeValue(forKey: handle) != nil {
+    if let helper = PoseDetectionModule.detectorMap[handle] {
+      // Actually clean up the MediaPipe resources before removing from map
+      helper.cleanup()
+      PoseDetectionModule.detectorMap.removeValue(forKey: handle)
       resolve(true)
     } else {
       resolve(false)
